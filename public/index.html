@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gestión de Jugadores</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #0a0e1a;
+    --surface:  #111827;
+    --card:     #1a2235;
+    --border:   #2a3550;
+    --accent:   #00e5a0;
+    --accent2:  #0077ff;
+    --danger:   #ff4757;
+    --text:     #e8edf5;
+    --muted:    #6b7a99;
+    --radius:   10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: .5rem;
+    padding: 1.5rem 2rem .5rem;
+  }
+  .tab {
+    padding: .55rem 1.4rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: all .2s;
+  }
+  .tab.active, .tab:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  /* ── MAIN ── */
+  main { padding: 1.5rem 2rem 3rem; max-width: 1300px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── TABLE ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+    gap: .8rem;
+  }
+  .search-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .55rem 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    width: 260px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-box:focus { border-color: var(--accent); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .55rem 1.2rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88rem;
+    font-weight: 600;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-edit    { background: var(--accent2); color: #fff; padding: .35rem .8rem; font-size: .82rem; }
+  .btn-delete  { background: var(--danger);  color: #fff; padding: .35rem .8rem; font-size: .82rem; }
+  .btn-cancel  { background: var(--border);  color: var(--text); }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+  thead { background: var(--card); }
+  th {
+    padding: .85rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: .75rem;
+    letter-spacing: .05em;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: .8rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  .badge {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 20px;
+    font-size: .78rem;
+    font-weight: 600;
+  }
+  .badge-titular  { background: rgba(0,229,160,.15); color: var(--accent); }
+  .badge-suplente { background: rgba(0,119,255,.15); color: var(--accent2); }
+
+  .pierna-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+  }
+  .pierna-dot::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  /* ── FORM ── */
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 820px;
+  }
+  .form-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .form-group { display: flex; flex-direction: column; gap: .4rem; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  input, select, textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .6rem .9rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface); }
+
+  .form-actions {
+    display: flex;
+    gap: .8rem;
+    margin-top: 1.5rem;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 90%;
+    max-width: 820px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    color: var(--accent2);
+  }
+  .btn-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .btn-close:hover { color: var(--text); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: .8rem 1.4rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: .9rem;
+    opacity: 0;
+    transition: opacity .3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+  #toast.success { background: var(--accent); color: #000; }
+  #toast.error   { background: var(--danger);  color: #fff; }
+
+  /* ── EMPTY / LOADING ── */
+  .state-msg {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: .95rem;
+  }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    main { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Scout<span>DB</span></div>
+  <span style="color:var(--muted);font-size:.85rem">Panel de Gestión</span>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showSection('lista')">📋 Jugadores</button>
+  <button class="tab" onclick="showSection('nuevo')">➕ Nuevo Jugador</button>
+</div>
+
+<main>
+
+  <!-- ── LISTA ── -->
+  <section id="lista" class="section active">
+    <div class="toolbar">
+      <input class="search-box" type="text" placeholder="🔍 Buscar jugador..." oninput="filtrarTabla(this.value)"/>
+      <button class="btn btn-primary" onclick="showSection('nuevo')">+ Añadir jugador</button>
+    </div>
+    <div class="table-wrap">
+      <table id="tabla-jugadores">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Posición</th>
+            <th>Club</th>
+            <th>Rol</th>
+            <th>Pierna</th>
+            <th>Agencia</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="8" class="state-msg">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── NUEVO ── -->
+  <section id="nuevo" class="section">
+    <div class="form-card">
+      <div class="form-title">Nuevo Jugador</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input id="f-nombre" type="text" placeholder="Ej: Adrián"/>
+        </div>
+        <div class="form-group">
+          <label>Apellidos *</label>
+          <input id="f-apellidos" type="text" placeholder="Ej: Fuentes Castellano"/>
+        </div>
+        <div class="form-group">
+          <label>Fecha de nacimiento *</label>
+          <input id="f-fecha" type="date"/>
+        </div>
+        <div class="form-group">
+          <label>Edad *</label>
+          <input id="f-edad" type="number" min="14" max="50" placeholder="25"/>
+        </div>
+        <div class="form-group">
+          <label>Posición detallada *</label>
+          <input id="f-posicion" type="text" placeholder="Ej: Lateral Izquierdo"/>
+        </div>
+        <div class="form-group">
+          <label>Rol *</label>
+          <select id="f-rol">
+            <option value="Titular">Titular</option>
+            <option value="Suplente">Suplente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Club actual *</label>
+          <input id="f-club" type="text" placeholder="Ej: CD Numancia"/>
+        </div>
+        <div class="form-group">
+          <label>Años de contrato *</label>
+          <input id="f-contrato" type="number" min="0" max="10" placeholder="2"/>
+        </div>
+        <div class="form-group">
+          <label>Dorsal *</label>
+          <input id="f-dorsal" type="number" min="1" max="99" placeholder="10"/>
+        </div>
+        <div class="form-group">
+          <label>Pierna hábil *</label>
+          <select id="f-pierna">
+            <option value="Derecha">Derecha</option>
+            <option value="Izquierda">Izquierda</option>
+            <option value="Ambas">Ambas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Agencia *</label>
+          <select id="f-agencia"></select>
+        </div>
+        <div class="form-group">
+          <label>Fecha contrato agencia</label>
+          <input id="f-contrato-agencia" type="date"/>
+        </div>
+        <div class="form-group full">
+          <label>Estadísticas</label>
+          <textarea id="f-estadisticas" placeholder="Ej: 26 partidos, 8 goles, 6 asistencias..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Trayectoria</label>
+          <textarea id="f-trayectoria" placeholder="Historial de clubes..."></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="crearJugador()">💾 Guardar jugador</button>
+        <button class="btn btn-cancel" onclick="showSection('lista')">Cancelar</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── MODAL EDITAR ── -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Editar Jugador</span>
+      <button class="btn-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <input type="hidden" id="e-id"/>
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input id="e-nombre" type="text"/>
+      </div>
+      <div class="form-group">
+        <label>Apellidos *</label>
+        <input id="e-apellidos" type="text"/>
+      </div>
+      <div class="form-group">
+        <label>Fecha de nacimiento *</label>
+        <input id="e-fecha" type="date"/>
+      </div>
+      <div class="form-group">
+        <label>Edad *</label>
+        <input id="e-edad" type="number" min="14" max="50"/>
+      </div>
+      <div class="form-group">
+        <label>Posición detallada *</label>
+        <input id="e-posicion" type="text"/>
+      </div>
+      <div class="form-group">
+        <label>Rol *</label>
+        <select id="e-rol">
+          <option value="Titular">Titular</option>
+          <option value="Suplente">Suplente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Club actual *</label>
+        <input id="e-club" type="text"/>
+      </div>
+      <div class="form-group">
+        <label>Años de contrato *</label>
+        <input id="e-contrato" type="number" min="0" max="10"/>
+      </div>
+      <div class="form-group">
+        <label>Dorsal *</label>
+        <input id="e-dorsal" type="number" min="1" max="99"/>
+      </div>
+      <div class="form-group">
+        <label>Pierna hábil *</label>
+        <select id="e-pierna">
+          <option value="Derecha">Derecha</option>
+          <option value="Izquierda">Izquierda</option>
+          <option value="Ambas">Ambas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Agencia *</label>
+        <select id="e-agencia"></select>
+      </div>
+      <div class="form-group">
+        <label>Fecha contrato agencia</label>
+        <input id="e-contrato-agencia" type="date"/>
+      </div>
+      <div class="form-group full">
+        <label>Estadísticas</label>
+        <textarea id="e-estadisticas"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Trayectoria</label>
+        <textarea id="e-trayectoria"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="guardarEdicion()">💾 Guardar cambios</button>
+      <button class="btn btn-cancel" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const API = '';  // mismo servidor
+
+  let todosJugadores = [];
+  let agencias = [];
+
+  // ── Inicializar ─────────────────────────────────────────────────────────────
+  async function init() {
+    await cargarAgencias();
+    await cargarJugadores();
+  }
+
+  async function cargarAgencias() {
+    try {
+      const res = await fetch(`${API}/api/agencias`);
+      agencias = await res.json();
+      const opts = agencias.map(a => `<option value="${a.agenciaid}">${a.nombre}</option>`).join('');
+      document.getElementById('f-agencia').innerHTML = opts;
+      document.getElementById('e-agencia').innerHTML = opts;
+    } catch { toast('Error cargando agencias', 'error'); }
+  }
+
+  async function cargarJugadores() {
+    try {
+      const res = await fetch(`${API}/api/jugadores`);
+      todosJugadores = await res.json();
+      renderTabla(todosJugadores);
+    } catch {
+      document.getElementById('tbody').innerHTML =
+        '<tr><td colspan="8" class="state-msg">⚠️ No se pudo conectar al servidor. ¿Está corriendo?</td></tr>';
+    }
+  }
+
+  function renderTabla(jugadores) {
+    const tbody = document.getElementById('tbody');
+    if (!jugadores.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="state-msg">No hay jugadores registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = jugadores.map(j => `
+      <tr>
+        <td style="color:var(--muted)">${j.idjugador}</td>
+        <td><strong>${j.nombre} ${j.apellidos}</strong></td>
+        <td>${j.posiciondetallada}</td>
+        <td>${j.clubactual}</td>
+        <td><span class="badge badge-${j.rol.toLowerCase()}">${j.rol}</span></td>
+        <td><span class="pierna-dot">${j.pierna_habil}</span></td>
+        <td style="color:var(--muted);font-size:.82rem">${j.nombre_agencia || '—'}</td>
+        <td style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn btn-edit" onclick="abrirEditar(${j.idjugador})">✏️ Editar</button>
+          <button class="btn btn-delete" onclick="eliminarJugador(${j.idjugador}, '${j.nombre}')">🗑️</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Buscar ───────────────────────────────────────────────────────────────────
+  function filtrarTabla(q) {
+    const lower = q.toLowerCase();
+    const filtrados = todosJugadores.filter(j =>
+      `${j.nombre} ${j.apellidos} ${j.clubactual} ${j.posiciondetallada}`.toLowerCase().includes(lower)
+    );
+    renderTabla(filtrados);
+  }
+
+  // ── Crear ────────────────────────────────────────────────────────────────────
+  async function crearJugador() {
+    const body = recogerFormulario('f');
+    if (!body) return;
+    try {
+      const res = await fetch(`${API}/api/jugadores`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      toast('Jugador creado correctamente ✅', 'success');
+      limpiarFormulario('f');
+      showSection('lista');
+      await cargarJugadores();
+    } catch (err) { toast('Error: ' + err.message, 'error'); }
+  }
+
+  // ── Editar ───────────────────────────────────────────────────────────────────
+  async function abrirEditar(id) {
+    try {
+      const res = await fetch(`${API}/api/jugadores/${id}`);
+      const j = await res.json();
+      document.getElementById('e-id').value          = j.idjugador;
+      document.getElementById('e-nombre').value      = j.nombre;
+      document.getElementById('e-apellidos').value   = j.apellidos;
+      document.getElementById('e-fecha').value       = j.fecha_nacimiento?.substring(0,10) || '';
+      document.getElementById('e-edad').value        = j.edad;
+      document.getElementById('e-posicion').value    = j.posiciondetallada;
+      document.getElementById('e-rol').value         = j.rol;
+      document.getElementById('e-club').value        = j.clubactual;
+      document.getElementById('e-contrato').value    = j.anos_contrato;
+      document.getElementById('e-dorsal').value      = j.dorsal;
+      document.getElementById('e-pierna').value      = j.pierna_habil;
+      document.getElementById('e-agencia').value     = j.agenciaid;
+      document.getElementById('e-contrato-agencia').value = j.contrato_agencia?.substring(0,10) || '';
+      document.getElementById('e-estadisticas').value = j.estadisticas || '';
+      document.getElementById('e-trayectoria').value  = j.trayectoria || '';
+      document.getElementById('modal-editar').classList.add('open');
+    } catch { toast('Error cargando jugador', 'error'); }
+  }
+
+  async function guardarEdicion() {
+    const id   = document.getElementById('e-id').value;
+    const body = recogerFormulario('e');
+    if (!body) return;
+    try {
+      const res = await fetch(`${API}/api/jugadores/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      toast('Jugador actualizado ✅', 'success');
+      cerrarModal();
+      await cargarJugadores();
+    } catch (err) { toast('Error: ' + err.message, 'error'); }
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal-editar').classList.remove('open');
+  }
+
+  // ── Eliminar ─────────────────────────────────────────────────────────────────
+  async function eliminarJugador(id, nombre) {
+    if (!confirm(`¿Seguro que quieres eliminar a ${nombre}?`)) return;
+    try {
+      await fetch(`${API}/api/jugadores/${id}`, { method: 'DELETE' });
+      toast('Jugador eliminado', 'success');
+      await cargarJugadores();
+    } catch { toast('Error al eliminar', 'error'); }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function recogerFormulario(p) {
+    const g = id => document.getElementById(`${p}-${id}`).value.trim();
+    if (!g('nombre') || !g('apellidos') || !g('fecha') || !g('edad') ||
+        !g('posicion') || !g('club') || !g('contrato') || !g('dorsal')) {
+      toast('Rellena todos los campos obligatorios *', 'error');
+      return null;
+    }
+    return {
+      nombre: g('nombre'), apellidos: g('apellidos'),
+      fecha_nacimiento: g('fecha'), edad: parseInt(g('edad')),
+      posiciondetallada: g('posicion'), rol: g('rol'),
+      clubactual: g('club'), anos_contrato: parseInt(g('contrato')),
+      dorsal: parseInt(g('dorsal')), pierna_habil: g('pierna'),
+      estadisticas: g('estadisticas') || null,
+      trayectoria: g('trayectoria') || null,
+      agenciaid: parseInt(g('agencia')),
+      contrato_agencia: g('contrato-agencia') || null
+    };
+  }
+
+  function limpiarFormulario(p) {
+    ['nombre','apellidos','fecha','edad','posicion','club','contrato',
+     'dorsal','estadisticas','trayectoria','contrato-agencia'].forEach(id => {
+      const el = document.getElementById(`${p}-${id}`);
+      if (el) el.value = '';
+    });
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const idx = id === 'lista' ? 0 : 1;
+    document.querySelectorAll('.tab')[idx]?.classList.add('active');
+  }
+
+  function toast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    setTimeout(() => t.className = '', 3000);
+  }
+
+  // ── Cerrar modal al click fuera ──────────────────────────────────────────────
+  document.getElementById('modal-editar').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+  });
+
+  init();
+</script>
+</body>
+</html>
