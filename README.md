@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏟️ ScoutDB — Gestión de Jugadores
 
 Aplicación web para gestionar jugadores y agencias conectada a tu PostgreSQL local.
@@ -71,3 +72,6 @@ jugadores-app/
 └── public/
     └── index.html   ← Frontend (la página web)
 ```
+=======
+# Prueba_Pagina
+>>>>>>> 8d2159f6eacd03d73bee9be05d8c6aa8e3d0a9db

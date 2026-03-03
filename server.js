@@ -14,11 +14,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── CONFIGURA AQUÍ TU BASE DE DATOS ───────────────────────────────────────
 const pool = new Pool({
-  host:     'localhost',
-  port:     5432,
-  database: 'postgres',   // <-- cambia esto
-  user:     'postgres',           // <-- cambia esto
-  password: 'anthony',        // <-- cambia esto
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 // ───────────────────────────────────────────────────────────────────────────
 
