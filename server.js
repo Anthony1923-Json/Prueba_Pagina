@@ -70,8 +70,8 @@ app.post('/api/jugadores', async (req, res) => {
     const result = await pool.query(`
       INSERT INTO jugadores_new
         (nombre, apellidos, fecha_nacimiento, edad, posiciondetallada, rol,
-         clubactual, anos_contrato, dorsal, pierna_habil, estadisticas,
-         trayectoria, agenciaid, contrato_agencia)
+        clubactual, anos_contrato, dorsal, pierna_habil, estadisticas,
+        trayectoria, agenciaid, contrato_agencia)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       RETURNING *
     `, [nombre, apellidos, fecha_nacimiento, edad, posiciondetallada, rol,
@@ -120,7 +120,7 @@ app.delete('/api/jugadores/:id', async (req, res) => {
   }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
