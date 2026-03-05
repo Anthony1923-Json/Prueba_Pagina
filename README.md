@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🏟️ ScoutDB — Gestión de Jugadores
 
 Aplicación web para gestionar jugadores y agencias conectada a tu PostgreSQL local.
@@ -41,7 +40,6 @@ Verás este mensaje:
 ✅ Servidor corriendo en http://localhost:3000
 ```
 
----
 
 ## 🌐 Acceder a la aplicación
 
@@ -49,7 +47,6 @@ Verás este mensaje:
 - **Desde otra persona en la misma red:** http://TU_IP_LOCAL:3000
   - Para saber tu IP local: en Windows ejecuta `ipconfig`, en Mac/Linux ejecuta `ifconfig`
 
----
 
 ## 📋 Funcionalidades
 
@@ -72,6 +69,4 @@ jugadores-app/
 └── public/
     └── index.html   ← Frontend (la página web)
 ```
-=======
-# Prueba_Pagina
->>>>>>> 8d2159f6eacd03d73bee9be05d8c6aa8e3d0a9db
+

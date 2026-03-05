@@ -1,3 +1,5 @@
+SET client_encoding = 'UTF8';
+
 CREATE TABLE AGENCIAS_NEW (
     AgenciaID               SERIAL          PRIMARY KEY,
     Nombre                  VARCHAR(100)    NOT NULL,
